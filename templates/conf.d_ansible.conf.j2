@@ -1,14 +1,7 @@
 # {{ ansible_managed }}
 
-# This directive specify the location of the file containing ID/key pairs for
-# NTP authentication.
-#keyfile /etc/chrony/chrony.keys
-keyfile {{ chrony_keyfile }}
-
-# This directive specify the file into which chronyd will store the rate
-# information.
-#driftfile /var/lib/chrony/chrony.drift
-driftfile {{ chrony_driftfile }}
+# values in here might get overwritten again in /etc/chrony/chrony.conf
+# because /etc/chrony/conf.d is read first and than /etc/chrony/chrony.conf
 
 # Uncomment the following line to turn logging on.
 log tracking measurements statistics
