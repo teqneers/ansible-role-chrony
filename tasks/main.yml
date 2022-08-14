@@ -1,25 +1,15 @@
 ---
-- set_fact:
-    ansible_distro: "{{ ansible_facts.distribution|lower|replace('\"', '') }}"
-  tags:
-    - always
 
-- name: gather os specific variables
+- name: Add OS specific variables
   include_vars: "{{ item }}"
-  ignore_errors: yes
+  ignore_errors: true
   with_first_found:
-    - files:
-      - "{{ ansible_distro }}-{{
-            ansible_facts.distribution_version|lower|replace('/', '_') }}.yml"
-      - "{{ ansible_distro }}-{{ ansible_facts.distribution_release }}.yml"
-      - "{{ ansible_distro }}-{{
-            ansible_facts.distribution_major_version|lower|replace('/', '_') }}.yml"
-      - "{{ ansible_distro }}.yml"
-      - "{{ ansible_facts.os_family|lower }}.yml"
-      paths:
-        - "../vars"
-  tags:
-    - always
+  - files:
+      - "{{ ansible_facts.distribution_release }}.yml"
+      - "{{ ansible_facts.distribution }}-{{ ansible_facts.distribution_version }}.yml"
+      - "{{ ansible_facts.distribution }}.yml"
+      - "{{ ansible_facts.os_family }}.yml"
+  tags: [always]
 
 - name: ensure ntp package is absent
   package:
@@ -60,44 +50,37 @@
 
 - name: update chrony.conf from template
   template:
-    src: chrony.conf
-    dest: "{{ chrony_config_path }}"
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
     owner: root
     group: root
     mode: 0644
-    backup: yes
-  register: chrony_conf
+    backup: true
+  with_items:
+    - {src: "chrony.conf.j2", dest: "{{ chrony_config_path }}/chrony.conf"}
+    - {src: "conf.d_ansible.conf.j2", dest: "{{ chrony_config_path }}/conf.d/ansible.conf"}
+  notify: restart chrony
   tags:
     - chrony
     - time
     - package
     - config
 
-- name: ensure chrony service is restarted if necessary
-  service:
-    name: "{{ item }}"
-    state: restarted
-  with_items: "{{ chrony_services }}"
-  when: chrony_services|length > 0 and chrony_conf is changed
+- name: update sources from template
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: root
+    mode: 0644
+    backup: true
+  with_items:
+    - {src: "sources.d_ansible.conf.j2", dest: "{{ chrony_config_path }}/sources.d/ansible.conf"}
+  notify: reload chronyc
   tags:
     - chrony
     - time
     - package
-    - service
-    - install
-
-- name: ensure chrony service is started and enabled
-  service:
-    name: "{{ item }}"
-    enabled: yes
-    state: started
-  with_items: "{{ chrony_services }}"
-  when: chrony_services|length > 0
-  tags:
-    - chrony
-    - time
-    - package
-    - service
-    - install
+    - config
 
 # vim: syntax=yaml ts=2 sw=2 et sr softtabstop=2 autoindent

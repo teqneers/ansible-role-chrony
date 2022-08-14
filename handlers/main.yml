@@ -1,0 +1,28 @@
+---
+
+- name: restart chrony
+  service:
+    name: "{{ item }}"
+    state: restarted
+    enabled: true
+  with_items: "{{ chrony_services }}"
+  tags:
+    - chrony
+    - time
+    - package
+    - service
+    - install
+
+
+- name: reload chronyc
+  command: >
+    /usr/bin/chronyc reload sources
+  tags:
+    - chrony
+    - time
+    - package
+    - service
+    - install
+
+
+# vim: syntax=yaml ts=2 sw=2 et sr softtabstop=2 autoindent
