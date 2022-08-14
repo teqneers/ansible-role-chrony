@@ -17,6 +17,13 @@
 #pool 0.ubuntu.pool.ntp.org iburst maxsources 1
 #pool 1.ubuntu.pool.ntp.org iburst maxsources 1
 #pool 2.ubuntu.pool.ntp.org iburst maxsources 2
+
+# SERVER
 {% for server in chrony_ntp_servers -%}
 server {{ server }} {{ chrony_server_settings }}
+{% endfor -%}
+
+# POOLS
+{% for pool in chrony_ntp_pools -%}
+pool {{ pool }} {{ chrony_pool_settings }}
 {% endfor -%}
