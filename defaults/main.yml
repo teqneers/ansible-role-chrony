@@ -16,3 +16,6 @@ chrony_pre_packages: []
 chrony_packages: []
 chrony_package_state: present
 chrony_services: []
+
+chrony_server_settings: minpoll 8
+chrony_pool_settings: iburst maxsources 2
