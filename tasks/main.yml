@@ -64,7 +64,7 @@
     mode: 0644
     backup: true
   with_items:
-    - {src: "sources.d_ansible.conf.j2", dest: "{{ chrony_config_path }}/sources.d/ansible.conf"}
+    - {src: "sources.d_ansible.sources.j2", dest: "{{ chrony_config_path }}/sources.d/ansible.sources"}
   notify: reload chronyc
   tags:
     - chrony
